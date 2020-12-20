@@ -1,5 +1,6 @@
 package de.kiyan.ChangeSkin.Events;
 
+import de.kiyan.ChangeSkin.Util.OverlayType;
 import de.kiyan.ChangeSkin.Util.SkinManager;
 import org.behindbars.core.util.handler.PlayerHandler;
 import org.bukkit.entity.Player;
@@ -13,9 +14,15 @@ public class EventJoin implements Listener
     public void onJoin( PlayerJoinEvent event  )
     {
         Player player = event.getPlayer();
+        Integer rank = new PlayerHandler().getRank( player);
 
-        if( new PlayerHandler().getRank( player) < 5 ) {
-            new SkinManager().applySkin(player);
+        if( rank  < 5 ) {
+            new SkinManager().applySkin(player, OverlayType.PRISONER);
+        }
+
+        if( rank == 7 || rank == 6 )
+        {
+            new SkinManager().applySkin( player, OverlayType.GUARD );
         }
     }
 }

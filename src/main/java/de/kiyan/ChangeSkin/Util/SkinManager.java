@@ -83,14 +83,14 @@ public class SkinManager {
         player.updateInventory();
     }
 
-    public void applySkin( Player player )
+    public void applySkin( Player player, OverlayType type )
     {
         JSONObject data = null;
         String value_base64 = "";
         String signature = "";
         try
         {
-            data = MineskinUtil.mineskinUpload( changeSkin( player ) );
+            data = MineskinUtil.mineskinUpload( changeSkin( player, type ) );
             String string = data.get( "data" ).toString( );
 
             JSONObject texture = new JSONObject( string );
@@ -105,13 +105,13 @@ public class SkinManager {
         reloadSkinForSelf( player, value_base64, signature );
     }
 
-    public BufferedImage changeSkin(Player p ) throws IOException
+    public BufferedImage changeSkin(Player p, OverlayType type ) throws IOException
     {
         BufferedImage originalSkin = getPlayerSkin( p );
         BufferedImage biOverlay = null;
         try
         {
-            biOverlay = ImageIO.read( new URL( new Config().getOverlay() ) );
+            biOverlay = ImageIO.read( new URL( type == OverlayType.PRISONER ? new Config().getPrisoner() : new Config().getGuard() ) );
         } catch( IOException e )
         {
             e.printStackTrace( );

@@ -2,9 +2,10 @@ package de.kiyan.ChangeSkin;
 
 public class Config
 {
-    Main instance =  null;
+    Main instance;
 
-    private String overlay;
+    private String prisoner;
+    private String guard;
 
     public Config()
     {
@@ -13,12 +14,17 @@ public class Config
 
     public void AssignVar( )
     {
-        overlay = instance.getConfig().getString( "OverlayURL");
+        prisoner = instance.getConfig().getString( "prisonerOverlay");
+        guard = instance.getConfig().getString( "guardOverlay");
     }
 
-    public String getOverlay()
+    public String getPrisoner( )
     {
-        return overlay;
+        return prisoner;
+    }
+    public String getGuard( )
+    {
+        return guard;
     }
 
 }
