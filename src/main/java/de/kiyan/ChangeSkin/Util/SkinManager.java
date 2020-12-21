@@ -17,13 +17,14 @@ import org.json.JSONObject;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Base64;
 
 public class SkinManager {
-    /*public static void reloadSkinForSelf(Player player, String value, String signature) {
+    public static void reloadSkinForSelf(Player player, String value, String signature) {
         GameProfile gProfile = ((CraftPlayer) player).getProfile();
         gProfile.getProperties().removeAll("textures");
         gProfile.getProperties().put("textures", new Property("textures", value, signature));
@@ -37,7 +38,7 @@ public class SkinManager {
         Location loc = player.getLocation().clone();
         ep.playerConnection.sendPacket(removeInfo);
         ep.playerConnection.sendPacket(addInfo);
-        player.teleport( new Location( Bukkit.getWorld( "world" ), 500, 100, 500));
+        player.teleport( new Config().getLocation() );
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -53,10 +54,10 @@ public class SkinManager {
                         true));
                 player.updateInventory();
             }
-        }.runTaskLater( Main.getInstance(), 40L);
-    }*/
+        }.runTaskLater( Main.getInstance(), 4L);
+    }
 
-    public void reloadSkinForSelf( Player player, String value, String signature ) {
+    /*public void reloadSkinForSelf( Player player, String value, String signature ) {
         GameProfile gProfile = ( ( CraftPlayer ) player ).getProfile();
         gProfile.getProperties().removeAll("textures" );
         gProfile.getProperties().put( "textures", new Property("textures", value, signature ) );
@@ -81,9 +82,9 @@ public class SkinManager {
         ePlayer.playerConnection.sendPacket( addInfo );
         ePlayer.playerConnection.sendPacket( respawn );
         player.updateInventory();
-    }
+    }*/
 
-    public void applySkin( Player player, OverlayType type )
+    public void applySkin( Player player, int type )
     {
         JSONObject data = null;
         String value_base64 = "";
@@ -99,19 +100,21 @@ public class SkinManager {
             JSONObject value = new JSONObject( string2 );
             value_base64 = value.get( "value" ).toString( );
             signature = value.get( "signature" ).toString( );
-            String string3 = value.get( "urls").toString();
 
         } catch( IOException e ) { e.printStackTrace( ); }
         reloadSkinForSelf( player, value_base64, signature );
     }
 
-    public BufferedImage changeSkin(Player p, OverlayType type ) throws IOException
+    public BufferedImage changeSkin(Player p, int type ) throws IOException
     {
         BufferedImage originalSkin = getPlayerSkin( p );
         BufferedImage biOverlay = null;
         try
         {
-            biOverlay = ImageIO.read( new URL( type == OverlayType.PRISONER ? new Config().getPrisoner() : new Config().getGuard() ) );
+            if( type == 0)
+                biOverlay = ImageIO.read( new File( Main.getInstance().getDataFolder(), "prisoner.png") );
+            else
+                biOverlay = ImageIO.read( new File( Main.getInstance().getDataFolder(), "guard.png") );
         } catch( IOException e )
         {
             e.printStackTrace( );

@@ -1,30 +1,49 @@
 package de.kiyan.ChangeSkin;
 
-public class Config
-{
-    Main instance;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
-    private String prisoner;
-    private String guard;
+import java.io.File;
 
-    public Config()
+public class Config {
+
+    Plugin plugin = null;
+
+    public Config( )
     {
-        instance = Main.getInstance();
+        this.plugin = Main.getInstance();
     }
 
-    public void AssignVar( )
+    public void prepareConfig()
     {
-        prisoner = instance.getConfig().getString( "prisonerOverlay");
-        guard = instance.getConfig().getString( "guardOverlay");
+        if( !(new File( plugin.getDataFolder(), "guard.png" ).exists() ) )
+        {
+            plugin.saveResource( "guard.png", false);
+        }
+
+        if( !(new File( plugin.getDataFolder(), "prisoner.png" ).exists() ) )
+        {
+            plugin.saveResource( "prisoner.png", false);
+        }
+
+        plugin.saveResource( "config.yml", true );
     }
 
-    public String getPrisoner( )
+    public Location getLocation()
     {
-        return prisoner;
-    }
-    public String getGuard( )
-    {
-        return guard;
-    }
+        World world = Bukkit.getWorld(plugin.getConfig().getString( "teleport.world") );
+        Location loc = new Location(
+                world,
+                plugin.getConfig().getDouble("teleport.x"),
+                plugin.getConfig().getDouble( "teleport.y"),
+                plugin.getConfig().getDouble( "teleport.z" )
+        );
 
+        return loc;
+    }
 }

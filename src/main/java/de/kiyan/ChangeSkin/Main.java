@@ -7,7 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin
 {
-    private static Main instance;
+    private static Main instance = null;
 
     @Override
     public void onEnable( )
@@ -16,12 +16,8 @@ public class Main extends JavaPlugin
 
         Bukkit.getServer( ).getConsoleSender( ).sendMessage( "§2Enabling ChangeSkin" );
 
-        saveDefaultConfig( );
-        reloadConfig( );
-
-        new Config().AssignVar();
-
-         PluginManager plr = Bukkit.getPluginManager( ); plr.registerEvents( new EventJoin(), instance );
+        new Config().prepareConfig();
+        PluginManager plr = Bukkit.getPluginManager( ); plr.registerEvents( new EventJoin(), instance );
     }
 
     public static Main getInstance( )
