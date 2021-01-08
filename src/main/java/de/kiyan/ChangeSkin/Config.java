@@ -3,10 +3,7 @@ package de.kiyan.ChangeSkin;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 
@@ -31,17 +28,17 @@ public class Config {
             plugin.saveResource( "prisoner.png", false);
         }
 
-        plugin.saveResource( "config.yml", true );
+        plugin.saveResource( "config.yml", false );
     }
 
     public Location getLocation()
     {
-        World world = Bukkit.getWorld(plugin.getConfig().getString( "teleport.world") );
+        World world = Bukkit.getWorld( plugin.getConfig().getString( "teleport.World") );
         Location loc = new Location(
                 world,
-                plugin.getConfig().getDouble("teleport.x"),
-                plugin.getConfig().getDouble( "teleport.y"),
-                plugin.getConfig().getDouble( "teleport.z" )
+                plugin.getConfig().getDouble("teleport.X" ),
+                plugin.getConfig().getDouble( "teleport.Y" ),
+                plugin.getConfig().getDouble( "teleport.Z" )
         );
 
         return loc;
