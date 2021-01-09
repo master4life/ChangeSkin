@@ -12,15 +12,13 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Random;
 
-public class EventJoin implements Listener
-{
+public class EventJoin implements Listener {
     int counter = 0;
 
     @EventHandler
-    public void onJoin( PlayerJoinEvent event  )
-    {
+    public void onJoin( PlayerJoinEvent event ) {
         Player player = event.getPlayer();
-        /*int rank = new PlayerHandler().getRank( player);
+        int rank = new PlayerHandler().getRank( player);
 
         if( rank < 5 )
         {
@@ -30,15 +28,7 @@ public class EventJoin implements Listener
         }
 
         if ( rank == 6 || rank == 7)
-            new SkinManager().applySkin(player, 1, -1);*/
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                new SkinManager().applySkin( player, 0, 2 );
-                System.out.println( " balbal ");
-            }
-        }.runTaskLater( Main.getInstance(), 100L );
-
+            new SkinManager().applySkin(player, 1, -1);
     }
 
 }

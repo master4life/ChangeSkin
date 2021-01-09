@@ -9,7 +9,7 @@ import java.io.File;
 
 public class Config {
 
-    Plugin plugin = null;
+    Plugin plugin;
 
     public Config( )
     {
@@ -27,20 +27,5 @@ public class Config {
         {
             plugin.saveResource( "prisoner.png", false);
         }
-
-        plugin.saveResource( "config.yml", false );
-    }
-
-    public Location getLocation()
-    {
-        World world = Bukkit.getWorld( plugin.getConfig().getString( "teleport.World") );
-        Location loc = new Location(
-                world,
-                plugin.getConfig().getDouble("teleport.X" ),
-                plugin.getConfig().getDouble( "teleport.Y" ),
-                plugin.getConfig().getDouble( "teleport.Z" )
-        );
-
-        return loc;
     }
 }
