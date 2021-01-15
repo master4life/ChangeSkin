@@ -5,9 +5,7 @@ import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import de.kiyan.ChangeSkin.Main;
-import net.minecraft.server.v1_16_R2.EntityPlayer;
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_16_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.mineskin.MineskinClient;
 import org.mineskin.Model;
@@ -206,9 +204,14 @@ public class SkinManager {
     }
 
     public BufferedImage getPlayerSkin( Player player ) {
-        EntityPlayer p = ( ( CraftPlayer ) player ).getHandle();
-        GameProfile profile = p.getProfile();
-        Property property = profile.getProperties().get( "textures" ).iterator().next();
+        Object profile = null;
+        try {
+            profile = player.getClass().getMethod( "getProfile" ).invoke( player );
+        } catch( Exception e ) {
+            e.printStackTrace();
+        }
+        GameProfile gameProfile = ( GameProfile ) profile;
+        Property property = gameProfile.getProperties().get( "textures" ).iterator().next();
         String texture = property.getValue();
 
         byte[] test = Base64.getDecoder().decode( texture );

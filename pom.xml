@@ -40,11 +40,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.comphenix.protocol</groupId>
-            <artifactId>ProtocolLib</artifactId>
-            <version>4.5.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.behindbars.core</groupId>
             <artifactId>behindbars</artifactId>
             <version>1.0</version>
