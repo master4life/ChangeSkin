@@ -4,28 +4,34 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import com.mojang.datafixers.util.Pair;
 import de.kiyan.ChangeSkin.Main;
-import net.minecraft.server.v1_16_R2.*;
+import net.minecraft.server.v1_16_R2.EntityPlayer;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_16_R2.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
-import org.json.JSONObject;
+import org.mineskin.MineskinClient;
+import org.mineskin.Model;
+import org.mineskin.SkinOptions;
+import org.mineskin.Visibility;
+import org.mineskin.data.Skin;
+import org.mineskin.data.SkinCallback;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
-import java.util.List;
 
 public class SkinManager {
 
-/*
+    /*
+
     public void reloadSkinForSelf( Player player, String value, String signature ) {
         CraftPlayer p = (CraftPlayer) player;
         GameProfile gProfile = ( ( CraftPlayer ) p ).getProfile();
@@ -83,92 +89,92 @@ public class SkinManager {
         }
     }
 
- */
-
-    private void reloadSkinForSelf( Player player, String value, String signature ) {
-        GameProfile gProfile = ( ( CraftPlayer ) player ).getProfile();
-        gProfile.getProperties().removeAll( "textures" );
-        gProfile.getProperties().put( "textures", new Property( "textures", value, signature ) );
-
-        EntityPlayer entityPlayer = ( ( CraftPlayer ) player ).getHandle();
-        Location location = player.getLocation();
-
-        // Recreate player
-        PacketPlayOutPlayerInfo packetPlayOutPlayerInfo = new PacketPlayOutPlayerInfo( PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, entityPlayer );
-        PacketPlayOutEntityDestroy packetPlayOutEntityDestroy = new PacketPlayOutEntityDestroy( entityPlayer.getId() );
-        PacketPlayOutNamedEntitySpawn playOutNamedEntitySpawn = new PacketPlayOutNamedEntitySpawn( entityPlayer );
-        PacketPlayOutPlayerInfo playOutPlayerInfoAdd = new PacketPlayOutPlayerInfo( PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, entityPlayer );
-
-        // World
-        PlayerInteractManager playerInteractManager = entityPlayer.playerInteractManager;
-        EnumGamemode enumGamemode = playerInteractManager.getGameMode();
-
-        PacketPlayOutRespawn packetPlayOutRespawn = new PacketPlayOutRespawn( entityPlayer.getWorld().getDimensionManager(), entityPlayer.getWorld().getDimensionKey(), player.getWorld().getSeed(), enumGamemode, enumGamemode, false, false, true );
-        PacketPlayOutPosition packetPlayOutPosition = new PacketPlayOutPosition( location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch(), new HashSet<>(), 0 );
-
-        // Inventory
-        List< Pair< EnumItemSlot, ItemStack > > playerInventory = new ArrayList<>();
-        playerInventory.add( new Pair<>( EnumItemSlot.MAINHAND, CraftItemStack.asNMSCopy( player.getInventory().getItemInMainHand() ) ) );
-        playerInventory.add( new Pair<>( EnumItemSlot.OFFHAND, CraftItemStack.asNMSCopy( player.getInventory().getItemInOffHand() ) ) );
-        playerInventory.add( new Pair<>( EnumItemSlot.HEAD, CraftItemStack.asNMSCopy( player.getInventory().getHelmet() ) ) );
-        playerInventory.add( new Pair<>( EnumItemSlot.CHEST, CraftItemStack.asNMSCopy( player.getInventory().getChestplate() ) ) );
-        playerInventory.add( new Pair<>( EnumItemSlot.LEGS, CraftItemStack.asNMSCopy( player.getInventory().getLeggings() ) ) );
-        playerInventory.add( new Pair<>( EnumItemSlot.FEET, CraftItemStack.asNMSCopy( player.getInventory().getBoots() ) ) );
-
-        PacketPlayOutEntityEquipment packetPlayOutEntityEquipment = new PacketPlayOutEntityEquipment( player.getEntityId(), playerInventory );
-        PacketPlayOutHeldItemSlot packetPlayOutHeldItemSlot = new PacketPlayOutHeldItemSlot( player.getInventory().getHeldItemSlot() );
-
-        // Update player for all players
-        for( Player onlinePlayer : Bukkit.getServer().getOnlinePlayers() ) {
-            CraftPlayer craftPlayer = ( ( CraftPlayer ) onlinePlayer );
-            PlayerConnection playerConnection = craftPlayer.getHandle().playerConnection;
-
-            if( onlinePlayer.equals( player ) ) {
-                playerConnection.sendPacket( packetPlayOutPlayerInfo );
-                playerConnection.sendPacket( playOutPlayerInfoAdd );
-                playerConnection.sendPacket( packetPlayOutRespawn );
-                playerConnection.sendPacket( packetPlayOutPosition );
-                playerConnection.sendPacket( packetPlayOutHeldItemSlot );
-
-                craftPlayer.updateScaledHealth();
-                entityPlayer.updateInventory( craftPlayer.getHandle().activeContainer );
-            } else if( onlinePlayer.getWorld().equals( player.getWorld() ) && onlinePlayer.canSee( player ) && player.isOnline() ) {
-                playerConnection.sendPacket( packetPlayOutEntityDestroy );
-                playerConnection.sendPacket( packetPlayOutPlayerInfo );
-                playerConnection.sendPacket( playOutPlayerInfoAdd );
-                playerConnection.sendPacket( playOutNamedEntitySpawn );
-                playerConnection.sendPacket( packetPlayOutEntityEquipment );
-            } else {
-                playerConnection.sendPacket( packetPlayOutPlayerInfo );
-                playerConnection.sendPacket( playOutPlayerInfoAdd );
-            }
-        }
-    }
-
-    public void applySkin( Player player, int type, int number ) {
+*/
+    private void updateSkin( Player player, String value, String signature ) {
         try {
-            new MineskinUtil().mineskinUpload( changeSkin( player, type, number ) ).whenComplete( ( JSONObject, throwable ) -> {
+            Object profile = player.getClass().getMethod( "getProfile" ).invoke( player );
+            GameProfile gameProfile = ( GameProfile ) profile;
+            gameProfile.getProperties().removeAll( "textures" );
+            gameProfile.getProperties().put( "textures", new Property( "textures", value, signature ) );
 
-                String value_base64 = "";
-                String signature = "";
-                String string = JSONObject.get( "data" ).toString();
+            // Get entityPlayer
+            Object entityPlayer = player.getClass().getMethod( "getHandle" ).invoke( player );
+            // Get the PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER as object
+            Object removeEnum = getNMSClass( "PacketPlayOutPlayerInfo$EnumPlayerInfoAction" ).getEnumConstants()[ 4 ];
+            Object addEnum = getNMSClass( "PacketPlayOutPlayerInfo$EnumPlayerInfoAction" ).getEnumConstants()[ 0 ];
+            Object classArray = Array.newInstance( getNMSClass( "EntityPlayer" ), 1 );
+            Object[] objArray = ( Object[] ) classArray;
+            objArray[ 0 ] = entityPlayer;
 
-                JSONObject texture = new JSONObject( string );
-                String string2 = texture.get( "texture" ).toString();
+            // Get the constructor
+            Constructor< ? > playerInfo = getNMSClass( "PacketPlayOutPlayerInfo" ).getConstructor( getNMSClass( "PacketPlayOutPlayerInfo$EnumPlayerInfoAction" ), objArray.getClass() );
+            // Apply the Enum & EntityPlayer to the instance
+            Object playerConnection = entityPlayer.getClass().getField( "playerConnection" ).get( entityPlayer );
+            Method sendPacket = playerConnection.getClass().getMethod( "sendPacket", getNMSClass( "Packet" ) );
+            sendPacket.invoke( playerConnection, playerInfo.newInstance( removeEnum, objArray ) );
+            sendPacket.invoke( playerConnection, playerInfo.newInstance( addEnum, objArray ) );
 
-                JSONObject value = new JSONObject( string2 );
-                value_base64 = value.get( "value" ).toString();
-                signature = value.get( "signature" ).toString();
+            Object world = entityPlayer.getClass().getMethod( "getWorld" ).invoke( entityPlayer );
+            Object dimensionManager = world.getClass().getMethod( "getDimensionManager" ).invoke( world );
+            Object dimensionKey = world.getClass().getMethod( "getDimensionKey" ).invoke( world );
+            Object world2 = world.getClass().getMethod( "getWorld" ).invoke( world );
+            Object seed = world2.getClass().getMethod( "getSeed" ).invoke( world2 );
+            String stringGameMode = player.getGameMode().name();
+            Method enumGamemode = getNMSClass( "EnumGamemode" ).getMethod( "valueOf", String.class );
+            Object gameMode = enumGamemode.invoke( getNMSClass( "EnumGamemode" ), stringGameMode );
+            Constructor< ? > OutRespawn = getNMSClass( "PacketPlayOutRespawn" ).getConstructor( dimensionManager.getClass(), dimensionKey.getClass(), long.class, getNMSClass( "EnumGamemode" ), getNMSClass( "EnumGamemode" ), boolean.class, boolean.class, boolean.class );
 
-                reloadSkinForSelf( player, value_base64, signature );
-
-            } );
-        } catch( IOException e ) {
+            sendPacket.invoke( playerConnection, OutRespawn.newInstance( dimensionManager, dimensionKey, (long) seed, gameMode, gameMode, false, false, true ) );
+            player.updateInventory();
+            player.getClass().getMethod( "sendHealthUpdate" ).invoke( player ); // ( ( CraftPlayer ) player ).sendHealthUpdate();
+        } catch( NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchFieldException e ) {
             e.printStackTrace();
         }
     }
 
-    public BufferedImage changeSkin( Player p, int type, int number ) throws IOException {
+    public Class< ? > getNMSClass( String name ) {
+        String version = Bukkit.getServer().getClass().getPackage().getName().split( "\\." )[ 3 ];
+        try {
+            return Class.forName( "net.minecraft.server." + version + "." + name );
+        } catch( ClassNotFoundException e ) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void applySkin( Player player, int type, int number ) {
+        mineskinUpload( player, changeSkin( player, type, number ) );
+    }
+
+    public void mineskinUpload( Player player, File skinFile ) {
+        MineskinClient skinClient = new MineskinClient();
+
+        String[] skinValues = new String[ 2 ];
+        skinClient.generateUpload( skinFile, SkinOptions.create( skinFile.getName().replace( ".png", "" ), Model.DEFAULT, Visibility.PRIVATE ), new SkinCallback() {
+            @Override
+            public void waiting( long l ) {
+                player.sendMessage( "§7Waiting " + ( l / 1000D ) + "s to upload skin..." );
+            }
+
+            @Override
+            public void uploading() {
+                player.sendMessage( "§eYour skin is generating..." );
+            }
+
+            @Override
+            public void done( Skin skin ) {
+                skinValues[ 0 ] = skin.data.texture.value;
+                skinValues[ 1 ] = skin.data.texture.signature;
+
+                if( skinFile.exists() )
+                    skinFile.delete();
+
+                updateSkin( player, skinValues[ 0 ], skinValues[ 1 ] );
+            }
+        } );
+    }
+
+    public File changeSkin( Player p, int type, int number ) {
         BufferedImage originalSkin = getPlayerSkin( p );
         BufferedImage biOverlay = null;
         try {
@@ -181,9 +187,22 @@ public class SkinManager {
         }
 
         // Combine both skins
+
+        File skin = null;
+        try {
+            skin = File.createTempFile( "mineskin-file", ".png" );
+        } catch( IOException e ) {
+            e.printStackTrace();
+        }
         BufferedImage newSkin = joinSkins( originalSkin, biOverlay, number );
 
-        return newSkin;
+        try {
+            ImageIO.write( newSkin, "png", skin );
+        } catch( IOException e ) {
+            e.printStackTrace();
+        }
+
+        return skin;
     }
 
     public BufferedImage getPlayerSkin( Player player ) {
