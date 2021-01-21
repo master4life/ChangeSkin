@@ -1,6 +1,0 @@
-name: ChangeSkin
-version: 0.0.1
-main: de.kiyan.ChangeSkin.Main
-description: Changes your skin of individual parts of your body
-author: master4life
-api-version: '1.13'
